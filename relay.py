@@ -1,10 +1,10 @@
 import RPi.GPIO as GPIO
 import time
 
-in1=29
-in2=31
-in3=33
-in4=35
+in1=31
+in2=33
+in3=35
+in4=37
 
 GPIO.setmode(GPIO.BOARD)
 GPIO.setup(in1,GPIO.OUT)

@@ -17,30 +17,39 @@ import pandas as pd
 import RPi.GPIO as GPIO
 import time
 from time import sleep
+import numpy as np
+import csv
+import datetime
 
 
 # Set up SPI moisture sensor(s)
 spi = busio.SPI(clock=board.SCK, MISO=board.MISO, MOSI=board.MOSI)
-
-
 cs = digitalio.DigitalInOut(board.D5) # D5=board pin 29
-
 mcp=MCP.MCP3008(spi,cs)
 
-chan = AnalogIn(mcp, MCP.P0)
+chan0 = AnalogIn(mcp, MCP.P0)
+chan1 = AnalogIn(mcp, MCP.P1)
 
-hum_obs_raw = chan.value
+hum_obs_raw0 = chan0.value
+hum_obs_raw1 = chan1.value
 
 
 
 # Import moisture sensor calibration
-sensor1 = 'Soil1'
+sensor0 = 'Soil1'
+sensor0_data = pd.read_csv('./calibration_files/'+sensor0+'.csv')
+print(sensor0_data)
+sensor1 = 'Soil2'
 sensor1_data = pd.read_csv('./calibration_files/'+sensor1+'.csv')
 print(sensor1_data)
-print(hum_obs_raw)
+print(hum_obs_raw0)
+print(hum_obs_raw1)
 # Calibrated 0%-100%
-soil1_value = (hum_obs_raw-sensor1_data['b'].iloc[0])/sensor1_data['m'].iloc[0]
-print(str(soil1_value)+'%')
+moist0 = (hum_obs_raw0-sensor0_data['b'].iloc[0])/sensor0_data['m'].iloc[0]
+moist1 = (hum_obs_raw1-sensor1_data['b'].iloc[0])/sensor1_data['m'].iloc[0]
+print(str(moist0)+'%')
+print(str(moist1)+'%')
+moist_avg = np.mean([moist0,moist1])
 
 # Need block of code to account for >100% or <0% humidity
 #
@@ -56,25 +65,36 @@ print(str(soil1_value)+'%')
 # Let's water for 30 seconds in the morning and 
 # see how the soil moisture responds
 
-# Set up relay on 
-in1=6
+# Set up relay
+in1=12
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(in1,GPIO.OUT)
 
 # Boolean for watering
 needs_watering = False
 
-if soil1_value < 50.:
+if moist_avg < 50.:
 	needs_watering = True
 
 # Relay is a normally closed relay
 # This means that a low output enables relay
 if needs_watering:
+	print('Soil moisture is ' + str(moist_avg) + '%')
+	print('Watering in progress...')
 	GPIO.output(in1,GPIO.LOW)
 	time.sleep(30)
 	GPIO.output(in1,GPIO.HIGH)
+	print('Watering complete!')
 	GPIO.cleanup()
 else:
 	GPIO.cleanup()
 
 
+# Record results of program
+filename='test_log.csv'
+
+fields=[datetime.datetime.now(),needs_watering,moist_avg,moist0,moist1]
+
+with open(filename,"a") as myfile:
+	writer = csv.writer(myfile)
+	writer.writerow(fields)

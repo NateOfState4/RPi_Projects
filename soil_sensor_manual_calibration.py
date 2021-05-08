@@ -21,7 +21,7 @@ cs = digitalio.DigitalInOut(board.D5) #
 
 mcp=MCP.MCP3008(spi,cs)
 
-chan = AnalogIn(mcp, MCP.P0)
+chan = AnalogIn(mcp, MCP.P1)
 
 print('Manual SPI calibration of soil sensors')
 sensor_name = input('Enter name of sensor (e.g.: Soil2, Temp1)')
@@ -58,6 +58,13 @@ filename=sensor_name+'.csv'
 
 print(df)
 
-with open('./calibration_files/'+filename,"w") as myfile:
-	data = df.to_csv(index=False)
-	myfile.write(data)
+print('')
+text = input('Keep these results? (Y/n)')
+if text == 'Y' or text == 'y':
+	print('Calbration successful')
+	with open('./calibration_files/'+filename,"w") as myfile:
+		data = df.to_csv(index=False)
+		myfile.write(data)
+else:
+	print('Manual calibration aborted')
+	quit()
