@@ -1,7 +1,7 @@
 from crontab import CronTab
 
-cron = CronTab(user='nathan')
-job = cron.new(command='main.py')
+cron = CronTab(user=True)
+job = cron.new(command='cd /home/nathan/RPi_Projects && $(which python3) /home/nathan/RPi_Projects/main.py')
 job.minute.every(5)
 
 cron.write()
