@@ -81,7 +81,7 @@ GPIO.setup(in1,GPIO.OUT)
 # Boolean for watering
 needs_watering = False
 
-if moist_avg < 50.:
+if moist_avg < 30.:
 	needs_watering = True
 
 # Relay is a normally closed relay

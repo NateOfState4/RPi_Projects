@@ -4,8 +4,8 @@ import Adafruit_DHT
 
 # BCM pin, not board pin
 sensor=Adafruit_DHT.DHT11
-sensor_pin1=27
-sensor_pin2=22
+sensor_pin1=23
+sensor_pin2=24
 
 		
 try:
