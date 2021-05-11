@@ -20,6 +20,7 @@ from time import sleep
 import numpy as np
 import csv
 import datetime
+import Adafruit_DHT
 
 
 # Set up SPI moisture sensor(s)
@@ -97,11 +98,26 @@ if needs_watering:
 else:
 	GPIO.cleanup()
 
+# Record temperature and humidity
+
+# BCM pin, not board pin
+sensor=Adafruit_DHT.DHT11
+sensor_pin1=23
+sensor_pin2=24
+
+hum1, tmp1 = Adafruit_DHT.read_retry(sensor,sensor_pin1)
+hum2, tmp2 = Adafruit_DHT.read_retry(sensor,sensor_pin2)
+tmp1 = tmp1*9./5. + 32.
+tmp2 = tmp2*9./5. + 32.
+
+print(tmp1, hum1, tmp2, hum2)
 
 # Record results of program
 filename='test_log.csv'
 
-fields=[datetime.datetime.now(),needs_watering,moist_avg,moist0,moist1,moist2]
+fields=[datetime.datetime.now(),needs_watering,
+		moist_avg,moist0,moist1,moist2,
+		tmp1,hum1,tmp2,hum2]
 
 with open(filename,"a") as myfile:
 	writer = csv.writer(myfile)
