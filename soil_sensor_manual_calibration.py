@@ -21,7 +21,7 @@ cs = digitalio.DigitalInOut(board.D5) #
 
 mcp=MCP.MCP3008(spi,cs)
 
-chan = AnalogIn(mcp, MCP.P1)
+chan = AnalogIn(mcp, MCP.P2)
 
 print('Manual SPI calibration of soil sensors')
 sensor_name = input('Enter name of sensor (e.g.: Soil2, Temp1)')
