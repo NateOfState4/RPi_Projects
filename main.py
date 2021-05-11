@@ -29,9 +29,11 @@ mcp=MCP.MCP3008(spi,cs)
 
 chan0 = AnalogIn(mcp, MCP.P0)
 chan1 = AnalogIn(mcp, MCP.P1)
+chan2 = AnalogIn(mcp, MCP.P2)
 
 hum_obs_raw0 = chan0.value
 hum_obs_raw1 = chan1.value
+hum_obs_raw2 = chan2.value
 
 
 
@@ -42,14 +44,20 @@ print(sensor0_data)
 sensor1 = 'Soil2'
 sensor1_data = pd.read_csv('./calibration_files/'+sensor1+'.csv')
 print(sensor1_data)
+sensor2 = 'Soil3'
+sensor2_data = pd.read_csv('./calibration_files/'+sensor2+'.csv')
+print(sensor2_data)
 print(hum_obs_raw0)
 print(hum_obs_raw1)
+print(hum_obs_raw2)
 # Calibrated 0%-100%
 moist0 = (hum_obs_raw0-sensor0_data['b'].iloc[0])/sensor0_data['m'].iloc[0]
 moist1 = (hum_obs_raw1-sensor1_data['b'].iloc[0])/sensor1_data['m'].iloc[0]
+moist2 = (hum_obs_raw2-sensor2_data['b'].iloc[0])/sensor2_data['m'].iloc[0]
 print(str(moist0)+'%')
 print(str(moist1)+'%')
-moist_avg = np.mean([moist0,moist1])
+print(str(moist2)+'%')
+moist_avg = np.mean([moist0,moist1,moist2])
 
 # Need block of code to account for >100% or <0% humidity
 #
@@ -93,7 +101,7 @@ else:
 # Record results of program
 filename='test_log.csv'
 
-fields=[datetime.datetime.now(),needs_watering,moist_avg,moist0,moist1]
+fields=[datetime.datetime.now(),needs_watering,moist_avg,moist0,moist1,moist2]
 
 with open(filename,"a") as myfile:
 	writer = csv.writer(myfile)
