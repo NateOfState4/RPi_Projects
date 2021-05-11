@@ -12,6 +12,7 @@ from adafruit_mcp3xxx.analog_in import AnalogIn
 import os
 import pandas as pd
 import json
+from time import sleep
 
 # In the end this is simply assigning GPIO pin #s to the SPI object.
 spi = busio.SPI(clock=board.SCK, MISO=board.MISO, MOSI=board.MOSI)
@@ -38,9 +39,10 @@ else:
 	print('Manual calibration aborted')
 	quit()
 	
-
 print('Second step: record low voltage')
-text = input('Is the sensor submerged in water? (Y/n)')
+#text = input('Is the sensor submerged in water? (Y/n)')
+print('SUBMERGE IN WATER NOW. MEASUREMENT IN 30 SECONDS')
+sleep(30)
 if text == 'Y' or text == 'y':
 	wet = chan.value
 else:
