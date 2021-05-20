@@ -18,10 +18,12 @@ import RPi.GPIO as GPIO
 import time
 from time import sleep
 import numpy as np
-import csv
 import datetime
 import Adafruit_DHT
+import mysql.connector
 
+
+now = datetime.datetime.now()
 
 # Set up SPI moisture sensor(s)
 spi = busio.SPI(clock=board.SCK, MISO=board.MISO, MOSI=board.MOSI)
@@ -110,15 +112,34 @@ hum2, tmp2 = Adafruit_DHT.read_retry(sensor,sensor_pin2)
 tmp1 = tmp1*9./5. + 32.
 tmp2 = tmp2*9./5. + 32.
 
-print(tmp1, hum1, tmp2, hum2)
 
-# Record results of program
-filename='test_log.csv'
 
-fields=[datetime.datetime.now(),needs_watering,
-		moist_avg,moist0,moist1,moist2,
-		tmp1,hum1,tmp2,hum2]
+# Record sensor output
+conn = mysql.connector.connect(user='nathan',
+							database='RoofProject',
+							password='eTHrseEb0wot1iC9')
+cursor = conn.cursor()
 
-with open(filename,"a") as myfile:
-	writer = csv.writer(myfile)
-	writer.writerow(fields)
+sql = ("""INSERT INTO SENSORS
+			(timestamp,
+			temperature1,temperature2,
+			humidity1,humidity2,
+			moisture1,moisture2,moisture3)
+			VALUES (%s, %s, %s, %s, %s, %s, %s, %s)""")
+
+
+	
+cursor.execute(sql,(now.strftime("%Y-%m-%d %H:%M"),
+					tmp1,tmp2,
+					hum1,hum2,
+					float(moist0),float(moist1),float(moist2)))
+
+conn.commit()
+
+
+
+
+cursor.close()
+conn.close()
+
+
