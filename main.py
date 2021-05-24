@@ -22,8 +22,10 @@ import datetime
 import Adafruit_DHT
 import mysql.connector
 
-
+# current datetime object
 now = datetime.datetime.now()
+# current time object
+nowtime = datetime.datetime.now().time()
 
 # Set up SPI moisture sensor(s)
 spi = busio.SPI(clock=board.SCK, MISO=board.MISO, MOSI=board.MOSI)
@@ -72,41 +74,10 @@ moist_avg = np.mean([moist0,moist1,moist2])
 #
 #
 #
-
-# Let's water for 30 seconds in the morning and 
-# see how the soil moisture responds
-
 # Set up relay
 in1=12
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(in1,GPIO.OUT)
-
-# Boolean for watering
-needs_watering = False
-
-# ALGORITHM FOR WATERING
-#
-# Temperature lock - 100?
-
-# Time lock
-
-
-
-if moist_avg < 30.:
-	needs_watering = True
-
-# Relay is a normally closed relay
-# This means that a low output enables relay
-if needs_watering:
-	print('Soil moisture is ' + str(moist_avg) + '%')
-	print('Watering in progress...')
-	GPIO.output(in1,GPIO.LOW)
-	time.sleep(30)
-	GPIO.output(in1,GPIO.HIGH)
-	print('Watering complete!')
-	GPIO.cleanup()
-else:
-	GPIO.cleanup()
 
 # Record temperature and humidity
 
@@ -119,6 +90,49 @@ hum1, tmp1 = Adafruit_DHT.read_retry(sensor,sensor_pin1)
 hum2, tmp2 = Adafruit_DHT.read_retry(sensor,sensor_pin2)
 tmp1 = tmp1*9./5. + 32.
 tmp2 = tmp2*9./5. + 32.
+
+
+
+
+
+# ALGORITHM FOR WATERING
+
+# Boolean for watering
+needs_watering = False
+
+# Time lock function
+def time_in_range(start,end,x):
+	if start <= end:
+		return start <= x <= end
+	else:
+		return start <= x or x <= end
+
+# Water at 7AM unless it's rained
+if (time_in_range(datetime.time(6,55,0),datetime.time(7,5,0),nowtime) and 
+	 moist_avg < 90.):
+	needs_watering = True
+# Water if soil moisture is very low, and not hot
+# (don't want to burn the plant with hot water if soaker hose
+#    is in the sun)
+elif (moist_avg < 60 and np.mean([tmp1,tmp2])<95.):
+	needs_watering = True
+
+
+
+
+# Relay is a normally closed relay
+# This means that a low output enables relay
+if needs_watering:
+	print('Soil moisture is ' + str(moist_avg) + '%')
+	print('Watering in progress...')
+	GPIO.output(in1,GPIO.LOW)
+	time.sleep(60)
+	GPIO.output(in1,GPIO.HIGH)
+	print('Watering complete!')
+	GPIO.cleanup()
+else:
+	GPIO.cleanup()
+
 
 
 
@@ -149,5 +163,6 @@ conn.commit()
 
 cursor.close()
 conn.close()
+
 
 
