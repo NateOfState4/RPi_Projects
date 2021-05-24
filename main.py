@@ -84,6 +84,14 @@ GPIO.setup(in1,GPIO.OUT)
 # Boolean for watering
 needs_watering = False
 
+# ALGORITHM FOR WATERING
+#
+# Temperature lock - 100?
+
+# Time lock
+
+
+
 if moist_avg < 30.:
 	needs_watering = True
 
